@@ -2,14 +2,16 @@ const puppeteer = require("puppeteer");
 const fs = require("fs");
 
 (async () => {
-  const browser = await puppeteer.launch();
-
+  const browser = await puppeteer.launch({
+    headless: "new",
+    // `headless: true` (default) enables old Headless;
+    // `headless: 'new'` enables new Headless;
+    // `headless: false` enables “headful” mode.
+  });
   const page = await browser.newPage();
 
   const html = fs.readFileSync("sample.html", "utf-8");
-  await page.goto("data:text/html;charset=UTF-8," + html, {
-    waitUntil: "networkidle0",
-  });
+  await page.goto("data:text/html;charset=UTF-8," + html);
 
   await page.emulateMediaType("screen");
 
