@@ -4,6 +4,7 @@ const fs = require("fs");
 (async () => {
   const browser = await puppeteer.launch({
     headless: "new",
+    executablePath: "src/inex.js",
     // `headless: true` (default) enables old Headless;
     // `headless: 'new'` enables new Headless;
     // `headless: false` enables “headful” mode.
