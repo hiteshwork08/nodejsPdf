@@ -1,4 +1,19 @@
-<style>
+const puppeteer = require("puppeteer");
+const fs = require("fs");
+
+async function generatePDF(req, res) {
+  const requestBody = req.query;
+  try {
+    const browser = await puppeteer.launch({
+      headless: "new",
+    });
+    const page = await browser.newPage();
+    const weeks = getWeeksBetweenDates(
+      requestBody.startDate,
+      requestBody.endDate
+    );
+    const html = `
+       <style>
     @import url('https://fonts.googleapis.com/css2?family=Glegoo&display=swap');
 
     .container {
@@ -114,9 +129,15 @@
             <h5 class="b-header">kollektium GmbH</h5>
         </div>
         <div class="stud-detail-header">
-            <p class="header">Name, Vorname:</p>
-            <p class="header">Anschrift:</p>
-            <p class="header">PLZ / Ort</p>
+            <p class="header">Name, Vorname: ${
+              requestBody.studentName || "<student_name>"
+            }</p>
+            <p class="header">Anschrift: ${
+              requestBody.address || "<student_address>"
+            }</p>
+            <p class="header">PLZ / Ort: ${
+              requestBody.zipCode || "<zip_code>"
+            }</p>
 
         </div>
         <h6 class="header">Maßnahmeninhalt</h6>
@@ -132,13 +153,19 @@
                 Kostenzusage des zuständigen Kostenträgers beruflich
                 qualifiziert</p>
 
-            <p class="content">(2) Der Titel der Maßnahme lautet: „__________________“
+            <p class="content">(2) Der Titel der Maßnahme lautet: "${
+              requestBody.courses
+            }"
                 mit den oben aufgeführten<br>
                 Qualifizierungsinhalten und entsprechend nach dem
                 aktuellen Arbeitsmarktanforderungen</p>
 
-            <p class="content">(3) Die Maßnahme beginnt am _________ und endet am
-                ____________ mit einem entsprechendem Zertifikat/
+            <p class="content">(3) Die Maßnahme beginnt am ${
+              requestBody.startDate || "<start_date>"
+            } und endet am
+               ${
+                 requestBody.endDate || "<end_date>"
+               } mit einem entsprechendem Zertifikat/
                 Prüfung</p>
 
             <p class="content">Die Unterrichtszeiten betragen von Montag bis Freitag
@@ -149,14 +176,16 @@
                 Urlaubsanspruch: _____Tage</p>
 
             <p class="content">(5) Der/ die Teilnehmende hat Anspruch auf ein Prak-
-                tikum von ____Wochen über den erteilten Lehrstoff,
+                tikum von ${weeks} Wochen über den erteilten Lehrstoff,
                 über die Anwesenheit des Teilnehmers wird ein<br>
                 Klassenbuch<br>
                 geführt</p>
 
             <h6 class="sub-header">§ 2 Kosten</h6>
             <p class="content">(1) Die Kosten des Qualifizierungslehrgangs betragen
-                _________€ (inkl. Arbeits- und Lehrmaterialien, siehe
+                € ${
+                  requestBody.totalCost || "<total_cost>"
+                }  (inkl. Arbeits- und Lehrmaterialien, siehe
                 Anlage). Diese werden über den vom Teilnehmenden
                 eingereichten Bildungsgutschein der Bundesagentur für</p>
         </div>
@@ -192,7 +221,7 @@
                 bis spätestens 8.00 Uhr, zu informieren. Zudem sind Sie
                 verpflichtet eine Arbeitsunfähigkeitsbescheinigung
                 spätestens am dritten Tag einzureichen. Sollte der
-                Teilnehmer innerhalb der ______ Wochen
+                Teilnehmer innerhalb der ${weeks} Wochen
                 Lehrgangstage mehr als 30% Tage fehlen, so ist das
                 erfolgreiche Abschneiden der <br>
                 Weiterbildungsmaßnahme gefährdet.</p>
@@ -301,3 +330,40 @@
 
 
 </div>
+      `;
+    await page.goto(`data:text/html;charset=UTF-8,${html}`);
+
+    await page.emulateMediaType("screen");
+
+    const pdfBuffer = await page.pdf({
+      path: "result.pdf",
+      margin: { top: "100px", right: "50px", bottom: "100px", left: "50px" },
+      printBackground: true,
+      format: "A4",
+    });
+
+    await browser.close();
+
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", "attachment; filename=result.pdf");
+    res.send(pdfBuffer);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("An error occurred while generating the PDF.");
+  }
+}
+
+function getWeeksBetweenDates(startDate, endDate) {
+  // Convert the start and end dates to Date objects
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+
+  // Calculate the time difference in milliseconds
+  const timeDiff = Math.abs(end - start);
+
+  // Convert milliseconds to weeks (1 week = 7 * 24 * 60 * 60 * 1000 milliseconds)
+  const weeks = Math.ceil(timeDiff / (7 * 24 * 60 * 60 * 1000));
+
+  return weeks;
+}
+module.exports = generatePDF;
