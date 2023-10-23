@@ -7,6 +7,7 @@ async function generatePDF(req, res) {
     const browser = await puppeteer.launch({
       headless: "new",
     });
+    console.log(requestBody);
     const page = await browser.newPage();
     const weeks = getWeeksBetweenDates(
       requestBody.startDate,
