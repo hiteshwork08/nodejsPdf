@@ -18,7 +18,7 @@ async function generatePDF(req, res) {
   const requestBody = req.query;
   try {
     const browser = await puppeteer.launch({
-      headless: true,
+      headless: "new",
     });
     console.log(requestBody);
     const page = await browser.newPage();
