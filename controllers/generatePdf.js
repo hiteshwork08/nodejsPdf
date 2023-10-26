@@ -1,6 +1,19 @@
 const puppeteer = require("puppeteer");
 const fs = require("fs");
 
+function getWeeksBetweenDates(startDate, endDate) {
+  // Convert the start and end dates to Date objects
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+
+  // Calculate the time difference in milliseconds
+  const timeDiff = Math.abs(end - start);
+
+  // Convert milliseconds to weeks (1 week = 7 * 24 * 60 * 60 * 1000 milliseconds)
+  const weeks = Math.ceil(timeDiff / (7 * 24 * 60 * 60 * 1000));
+
+  return weeks;
+}
 async function generatePDF(req, res) {
   const requestBody = req.query;
   try {
@@ -353,17 +366,4 @@ async function generatePDF(req, res) {
   }
 }
 
-function getWeeksBetweenDates(startDate, endDate) {
-  // Convert the start and end dates to Date objects
-  const start = new Date(startDate);
-  const end = new Date(endDate);
-
-  // Calculate the time difference in milliseconds
-  const timeDiff = Math.abs(end - start);
-
-  // Convert milliseconds to weeks (1 week = 7 * 24 * 60 * 60 * 1000 milliseconds)
-  const weeks = Math.ceil(timeDiff / (7 * 24 * 60 * 60 * 1000));
-
-  return weeks;
-}
 module.exports = generatePDF;
