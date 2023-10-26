@@ -5,7 +5,7 @@ async function generatePDF(req, res) {
   const requestBody = req.query;
   try {
     const browser = await puppeteer.launch({
-      headless: "new",
+      headless: true,
     });
     console.log(requestBody);
     const page = await browser.newPage();
@@ -113,7 +113,6 @@ async function generatePDF(req, res) {
 
     .stud-detail-header {
         margin-bottom: 12px;
-        /* my-3 */
     }
 </style>
 <div class="container">
@@ -337,7 +336,7 @@ async function generatePDF(req, res) {
     await page.emulateMediaType("screen");
 
     const pdfBuffer = await page.pdf({
-      path: "result.pdf",
+      path: "documents.pdf",
       margin: { top: "100px", right: "50px", bottom: "100px", left: "50px" },
       printBackground: true,
       format: "A4",
