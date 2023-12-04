@@ -362,7 +362,7 @@ async function generatePDF(req, res) {
     res.send(pdfBuffer);
   } catch (error) {
     console.error(error);
-    res.status(500).send("An error occurred while generating the PDF.");
+    res.status(500).send("Error In Generating the PDF in >>>.");
   }
 }
 
